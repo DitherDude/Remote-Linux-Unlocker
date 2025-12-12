@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 import socket, sys, json, struct, os
 
-from pprint import pprint
+def eprint(*args, **kwargs):
+    print(*args, file=sys.stderr, **kwargs)
 
 def is_json(myjson):
     try:
         json_object = json.loads(myjson)
-    except ValueError, e:
+    except (ValueError, e):
         return False
     return True
 
@@ -32,7 +33,7 @@ s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 s.connect((str(get_default_gateway_linux()), 0))
 IP = s.getsockname()[0]
 
-print >>sys.stderr, "You are about to pair a new device to this computer.\nIf you have not done so already, please open the Remote Linux Unlocker app. You can download it here: https://play.google.com/store/apps/details?id=com.maxchehab.remotelinuxunlocker\nWhen you are ready, please type the following IP address into the required field on your device.\n\nIP Address: " + IP
+eprint("You are about to pair a new device to this computer.\nIf you have not done so already, please open the Remote Linux Unlocker app. You can download it here: https://play.google.com/store/apps/details?id=com.maxchehab.remotelinuxunlocker\nWhen you are ready, please type the following IP address into the required field on your device.\n\nIP Address: " + IP)
 sock.bind(server_address)
 
 # Listen for incoming connections
@@ -40,16 +41,16 @@ sock.listen(1)
 
 while True:
     # Wait for a connection
-    print >>sys.stderr, '\nAwaiting your response...'
+    eprint('\nAwaiting your response...')
     connection, client_address = sock.accept()
 
     try:
-        print >>sys.stderr, 'Connection received...'
+        eprint('Connection received...')
 
         # Receive the data in small chunks and retransmit it
         while True:
             data = connection.recv(256).strip()
-            print >>sys.stderr, 'Processing request...'
+            eprint('Processing request...')
             if is_json(data):
                 data = json.loads(data)
                 if data["command"] == "pair" and len(data["key"]) == 64:
@@ -59,12 +60,12 @@ while True:
                         append_write = 'w' # make a new file if not
                     with open(os.path.dirname(os.path.realpath(__file__)) + '/keys.db', append_write) as file:
                         file.write(data["key"] + "\n")
-                    connection.sendall('{"status":"success"}')
-                    print >> sys.stderr, 'Pairing was successful!'
+                    connection.sendall(b'{"status":"success"}')
+                    eprint('Pairing was successful!')
                     sys.exit()
 
             else:
-                print >>sys.stderr, 'Invalid request!'
+                eprint('Invalid request!')
                 sys.exit()
                 break
 
