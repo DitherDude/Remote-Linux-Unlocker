@@ -4,7 +4,7 @@ Remote Linux Unlocker is an android application paired with a linux daemon that 
 
 ## How to install the android application
 
-Install the android application from the [Google Play Store](https://play.google.com/store/apps/details?id=com.maxchehab.remotelinuxunlocker) or download the source from this repository.
+Install the android application from the zip file (download command below) or download the source from this repository.
 
 ## How to install the linux daemon
 
@@ -14,7 +14,7 @@ user@machine:~/Downloads$ unzip linux-daemon.zip
 user@machine:~/Downloads$ cd linux-daemon
 #edit `unlocker-daemon.service` so that the absolute path to unlocker-daemon.py is correct
 #run the below commands as sudo!
-root@machine:.../linux-daemon# mv unlocker-daemon.service /etc/systemd/system/unlocker-daemon.service
+root@machine:.../linux-daemon# cp unlocker-daemon.service /etc/systemd/system/unlocker-daemon.service
 root@machine:~# systemctl daemon-reload
 root@machine:~# systemctl enable unlocker-daemon
 root@machine:~# systemctl start unlocker-daemon
