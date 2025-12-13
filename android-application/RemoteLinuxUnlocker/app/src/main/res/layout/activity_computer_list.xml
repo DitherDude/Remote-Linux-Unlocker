@@ -7,16 +7,15 @@
     tools:context="com.maxchehab.remotelinuxunlocker.ComputerListActivity">
 
     <android.support.v4.widget.SwipeRefreshLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/refresh"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
         <LinearLayout
-            android:orientation="vertical"
-            android:id="@+id/list"
+            android:id="@+id/delete"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
         </LinearLayout>
 
@@ -31,5 +30,26 @@
         android:tint="#fff"
         app:fabSize="normal"
         app:srcCompat="@drawable/ic_new" />
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/deleteFab"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:onClick="deleteMenu"
+        app:layout_anchor="@+id/refresh"
+        app:layout_anchorGravity="start|bottom"
+        app:srcCompat="@android:drawable/ic_delete"
+        app:useCompatPadding="true" />
+
+    <TextView
+        android:id="@+id/infoBar"
+        android:layout_width="match_parent"
+        android:layout_height="36dp"
+        android:gravity="bottom|center"
+        android:text="Computers will appear here"
+        android:textStyle="bold"
+        app:layout_anchor="@+id/refresh"
+        app:layout_anchorGravity="center|top" />
 
 </android.support.design.widget.CoordinatorLayout>

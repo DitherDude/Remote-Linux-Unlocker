@@ -2,19 +2,16 @@ package com.maxchehab.remotelinuxunlocker;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import java.math.BigInteger;
-import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -55,6 +52,14 @@ public class ComputerListActivity extends AppCompatActivity {
             }
         });
 
+        FloatingActionButton deleteFab = (FloatingActionButton) findViewById(R.id.deleteFab);
+        deleteFab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                deleteComputerList();
+            }
+        });
+
 
         swipeContainer = (SwipeRefreshLayout) findViewById(R.id.refresh);
         // Setup refresh listener which triggers new data loading
@@ -73,7 +78,7 @@ public class ComputerListActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         if (getIntent().getAction() != null) {
-            Log.e("INTENT-ACTION:",getIntent().getAction().toString());
+            Log.e("INTENT-ACTION:", getIntent().getAction());
         }
         refreshComputerList();
 
@@ -81,19 +86,24 @@ public class ComputerListActivity extends AppCompatActivity {
     }
 
     public void refreshComputerList(){
+        TextView infoBar = (TextView) findViewById(R.id.infoBar);
         SharedPreferences sharedPref = getSharedPreferences("data", MODE_PRIVATE);
         String key = sharedPref.getString("key",null);
         Log.d("ips",sharedPref.getString("ips",null));
         String ipString = sharedPref.getString("ips",null);
         List<String> ips = new ArrayList<String>();
-        if(ipString.length() > 0){
+        if(!ipString.isEmpty()){
             ips = Arrays.asList(sharedPref.getString("ips",null).split(","));
             ips = new ArrayList<String>(ips);
         }
         ArrayList<View> computerList = new ArrayList<View>();
-
+        if (ips.isEmpty()) {
+            infoBar.setVisibility(View.VISIBLE);
+        } else {
+            infoBar.setVisibility(View.GONE);
+        }
         for(int i = 0 ; i < ips.size(); i++){
-            if(ips.get(i).length() > 0){
+            if(!ips.get(i).isEmpty()){
                 Log.d("creating-ip",ips.get(i));
 
                 if(!commanded && getIntent().hasExtra("command")){
@@ -107,7 +117,7 @@ public class ComputerListActivity extends AppCompatActivity {
             }
         }
 
-        LinearLayout feedLayout = (LinearLayout) findViewById(R.id.list);
+        LinearLayout feedLayout = (LinearLayout) findViewById(R.id.delete);
         feedLayout.removeAllViews();
 
 
@@ -115,6 +125,52 @@ public class ComputerListActivity extends AppCompatActivity {
             feedLayout.addView(computerList.get(i));
         }
         swipeContainer.setRefreshing(false);
+    }
+
+    public void deleteComputerList() {
+        TextView infoBar = (TextView) findViewById(R.id.infoBar);
+        SharedPreferences sharedPref = getSharedPreferences("data", MODE_PRIVATE);
+        String key = sharedPref.getString("key",null);
+        // Log.d("ips",sharedPref.getString("ips",null));
+        String ipString = sharedPref.getString("ips",null);
+        List<String> ips = new ArrayList<String>();
+        if(!ipString.isEmpty()){
+            ips = Arrays.asList(sharedPref.getString("ips",null).split(","));
+            ips = new ArrayList<String>(ips);
+        }
+        ArrayList<View> computerList = new ArrayList<View>();
+        if (ips.isEmpty()) {
+            infoBar.setVisibility(View.VISIBLE);
+        } else {
+            infoBar.setVisibility(View.GONE);
+        }
+        for(int i = 0 ; i < ips.size(); i++){
+            if(!ips.get(i).isEmpty()){
+                // Log.d("creating-ip",ips.get(i));
+
+                if(!commanded && getIntent().hasExtra("command")){
+
+                    computerList.add(new DeleteLayout(this,ips.get(i),key));
+                    commanded = true;
+                }else{
+                    computerList.add(new DeleteLayout(this,ips.get(i),key));
+                }
+
+            }
+        }
+
+        LinearLayout feedLayout = (LinearLayout) findViewById(R.id.delete);
+        feedLayout.removeAllViews();
+
+
+        for(int i = 0; i < computerList.size(); i++){
+            feedLayout.addView(computerList.get(i));
+        }
+        swipeContainer.setRefreshing(false);
+    }
+
+    public void DeleteMenu(android.view.View view){
+
     }
 
     public static String getRandomNumber(int digCount) {

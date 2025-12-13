@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import socket, sys, json, subprocess, os
 
@@ -11,28 +12,41 @@ def is_json(myjson):
         return False
     return True
 
-
-def is_locked():
-    users = [i.split(':') for i in open('/etc/shadow').readlines()]
-    user = [i[0] for i in users if i[1] not in ('!', '*')][0]
-
-    commands = 'su ' + user + ' -c -- "gdbus call -e -d com.canonical.Unity -o /com/canonical/Unity/Session -m com.canonical.Unity.Session.IsLocked"'
-    p = subprocess.Popen(commands,stdout=subprocess.PIPE, shell=True)
-    if "true" in str(p.communicate()):
-        return True
-    else:
-        return False
-    return False
+def get_user_from_key(key):
+    with open(os.path.dirname(os.path.realpath(__file__)) + '/keys') as file:
+        for line in file:
+            line = line.strip().split(' ')
+            if line[1] == key:
+                return line[0]
+                break
+    return ""
 
 def authenticate_key(key):
-    with open(os.path.dirname(os.path.realpath(__file__)) + '/keys.db') as file:
-        for line in file:
-            if line.strip() == key:
-                return True
-                break
+    # with open(os.path.dirname(os.path.realpath(__file__)) + '/keys') as file:
+    #     for line in file:
+    #         if line.strip().split(' ')[1] == key:
+    #             return True
+    #             break
+    # return False
+    return get_user_from_key(key) != ""
 
+def is_locked(key):
+    # users = [i.split(':') for i in open('/etc/shadow').readlines()]
+    # user = [i[0] for i in users if i[1] not in ('!', '*')][0]
+    user = get_user_from_key(key)
+    if user == "":
+        return False
+    #commands = 'su ' + user + ' -c -- "gdbus call -e -d com.canonical.Unity -o /com/canonical/Unity/Session -m com.canonical.Unity.Session.IsLocked"'
+    commands = 'su ' + user + ' -c -- "dbus-send --session --dest=org.freedesktop.ScreenSaver --type=method_call --print-reply /org/freedesktop/ScreenSaver org.freedesktop.ScreenSaver.GetActive"'
+    p = subprocess.Popen(commands,stdout=subprocess.PIPE, shell=True)
+    res = str(p.communicate())
+    if "true" in res:
+        return True
+    else:
+        # print(users)
+        print(user + "> " + res)
+        return False
     return False
-
 
 # Create a TCP/IP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -72,7 +86,7 @@ while True:
                     break
                 elif data["command"] == "status" and data["key"] and authenticate_key(data["key"]):
                     eprint('client requesting echo')
-                    response = '{"status":"success","hostname":"' + socket.gethostname() +  '","isLocked":"' + str(is_locked()) + '"}';
+                    response = '{"status":"success","hostname":"' + socket.gethostname() +  '","isLocked":"' + str(is_locked(data["key"])) + '"}'
                     eprint( response)
                     connection.sendall(response.encode("utf-8"))
                     break

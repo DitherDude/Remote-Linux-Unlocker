@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import socket, sys, json, struct, os
+import socket, sys, json, struct, os, getpass, pwd
 
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
@@ -21,6 +21,14 @@ def get_default_gateway_linux():
 
             return socket.inet_ntoa(struct.pack("<L", int(fields[2], 16)))
 
+def get_username():
+    user = pwd.getpwuid(os.getuid()).pw_name
+    if user == "root":
+        try:
+            user = os.environ["SUDO_USER"]
+        except KeyError:
+            return getpass.getuser()
+    return user
 
 # Create a TCP/IP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -54,12 +62,12 @@ while True:
             if is_json(data):
                 data = json.loads(data)
                 if data["command"] == "pair" and len(data["key"]) == 64:
-                    if os.path.exists(os.path.dirname(os.path.realpath(__file__)) + '/keys.db'):
+                    if os.path.exists(os.path.dirname(os.path.realpath(__file__)) + '/keys'):
                         append_write = 'a' # append if already exists
                     else:
                         append_write = 'w' # make a new file if not
-                    with open(os.path.dirname(os.path.realpath(__file__)) + '/keys.db', append_write) as file:
-                        file.write(data["key"] + "\n")
+                    with open(os.path.dirname(os.path.realpath(__file__)) + '/keys', append_write) as file:
+                        file.write(get_username() + " " + data["key"] + "\n")
                     connection.sendall(b'{"status":"success"}')
                     eprint('Pairing was successful!')
                     sys.exit()
