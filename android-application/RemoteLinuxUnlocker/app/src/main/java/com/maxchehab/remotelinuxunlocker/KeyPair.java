@@ -10,10 +10,13 @@ public class KeyPair {
     final String key;
     String user;
 
+    boolean unlock = false;
+
     KeyPair(String ip) {
         this.ip = ip;
         this.key = new BigInteger(getRandomNumber(64)).toString();
         this.user = "";
+        this.unlock = false;
     }
 
     public boolean containsIp(String ip) {

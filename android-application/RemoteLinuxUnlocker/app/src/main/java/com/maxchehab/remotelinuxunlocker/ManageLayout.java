@@ -1,8 +1,10 @@
 package com.maxchehab.remotelinuxunlocker;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.CardView;
 import android.util.Log;
 import android.view.View;
@@ -38,8 +40,32 @@ public class ManageLayout extends CardView {
         deetsBar = findViewById(R.id.deetsBar);
         Button deleteComputer = findViewById(R.id.deleteComputer);
         deleteComputer.setOnClickListener(view -> {
-            deleteIp(context, key.ip);
+            deleteIp(context, key);
             setVisibility(View.GONE);
+        });
+        Button unlockComputer = findViewById(R.id.unlockComputer);
+        if (key.unlock) {
+            int color = ContextCompat.getColor(context, R.color.successColorAccent);
+            unlockComputer.setBackgroundTintList(ColorStateList.valueOf(color));
+            unlockComputer.setText(R.string.lock);
+        }
+        unlockComputer.setOnClickListener(view -> {
+            KeyPairList keys = new KeyPairList(context);
+            if (!keys.removeKey(key)) {
+                System.out.println("Key not found.");
+            }
+            key.unlock = !key.unlock;
+            keys.add(key);
+            keys.commitKeys(context);
+            if (key.unlock) {
+                int color = ContextCompat.getColor(context, R.color.successColorAccent);
+                unlockComputer.setBackgroundTintList(ColorStateList.valueOf(color));
+                unlockComputer.setText(R.string.lock);
+            } else {
+                int color = ContextCompat.getColor(context, R.color.dangerColorAccent);
+                unlockComputer.setBackgroundTintList(ColorStateList.valueOf(color));
+                unlockComputer.setText(R.string.unlock);
+            }
         });
         deetsBar.setText(String.format("%s@%s", key.user, key.ip));
         executor2.execute(() -> {
@@ -52,9 +78,9 @@ public class ManageLayout extends CardView {
         });
     }
 
-    void deleteIp(Context context, String ip) {
+    void deleteIp(Context context, KeyPair key) {
         KeyPairList keys = new KeyPairList(context);
-        if (!keys.removeKey(ip)) {
+        if (!keys.removeKey(key)) {
             System.out.println("Key not found.");
         }
         keys.commitKeys(context);
