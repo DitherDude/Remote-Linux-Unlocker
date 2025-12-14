@@ -1,8 +1,10 @@
 package com.maxchehab.remotelinuxunlocker;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.CardView;
 import android.util.Log;
 import android.view.View;
@@ -31,12 +33,12 @@ public class ComputerLayout extends CardView{
 
     public ComputerLayout(Context context, String ip, String key) {
         super(context);
-        init(ip,key,null);
+        init(context, ip,key,null);
     }
 
     public ComputerLayout(Context context, String ip, String key, String command) {
         super(context);
-        init(ip,key, command);
+        init(context, ip ,key, command);
     }
 
     private TextView hostname;
@@ -44,7 +46,7 @@ public class ComputerLayout extends CardView{
 
     private boolean locked = false;
 
-    private void init(final String ip, final String key, String command) {
+    private void init(Context context, final String ip, final String key, String command) {
         inflate(getContext(), R.layout.computer_layout, this);
         hostname = findViewById(R.id.hostname);
         lockButton = findViewById(R.id.lockButton);
@@ -53,27 +55,31 @@ public class ComputerLayout extends CardView{
         executor2.execute(() -> {
             StatusResult result = status(ip, key);
             handler.post(() -> {
-               applyResult(result);
+               applyResult(context, result);
             });
         });
 
         lockButton.setOnClickListener(v -> {
             lockButton.setEnabled(false);
             lockButton.setClickable(false);
+            int color = ContextCompat.getColor(context, R.color.warningColorAccent);
+            lockButton.setBackgroundTintList(ColorStateList.valueOf(color));
+            lockButton.setText(R.string.loading_placeholder);
+            invalidate();
             if(locked){
-                lock(ip,key,"unlock");
+                lock(context, ip,key,"unlock");
             }else{
-                lock(ip, key,"lock");
+                lock(context, ip, key,"lock");
             }
         });
 
         if(command != null){
-            lock(ip,key,command);
+            lock(context, ip,key,command);
         }
     }
     private static final ExecutorService executor = Executors.newSingleThreadExecutor();
     /** @noinspection CallToPrintStackTrace*/
-    private void lock(String ip, String key, String action){
+    private void lock(Context context, String ip, String key, String action){
         try {
             executor.submit(new ClientBuilder().setHost(ip).setPort(61599).setMessage("{\"command\":\"" + action + "\",\"key\":\"" + key + "\"}").createClient()).get(2, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
@@ -83,31 +89,35 @@ public class ComputerLayout extends CardView{
         } catch (TimeoutException e) {
             e.printStackTrace();
         }
-        boolean tempLocked = locked;
-        while(tempLocked == locked){
-            ExecutorService executor2 = Executors.newSingleThreadExecutor();
-            Handler handler = new Handler(Looper.getMainLooper());
-            executor2.execute(() -> {
+        ExecutorService executor2 = Executors.newSingleThreadExecutor();
+        Handler handler = new Handler(Looper.getMainLooper());
+        executor2.execute(() -> {
+            boolean tempLocked = locked;
+            while(tempLocked == locked){
                 StatusResult result = status(ip, key);
-                handler.post(() -> {
-                    applyResult(result);
-                });
-            });
-        }
-        lockButton.setClickable(true);
-        lockButton.setEnabled(true);
+                if (result != null && result.locked != locked) {
+                    handler.post(() -> {
+                        applyResult(context, result);
+                        lockButton.setClickable(true);
+                        lockButton.setEnabled(true);
+                    });
+                }
+            }
+        });
     }
 
     private record StatusResult(String hostname, boolean locked){}
 
-    private void applyResult(StatusResult result) {
-        if (result == null) {
-            return;
-        }
+    private void applyResult(Context context, StatusResult result) {
+        locked = result.locked;
         hostname.setText(result.hostname);
-        if(result.locked){
+        if(locked){
+            int color = ContextCompat.getColor(context, R.color.dangerColorAccent);
+            lockButton.setBackgroundTintList(ColorStateList.valueOf(color));
             lockButton.setText(R.string.unlock);
         } else {
+            int color = ContextCompat.getColor(context, R.color.successColorAccent);
+            lockButton.setBackgroundTintList(ColorStateList.valueOf(color));
             lockButton.setText(R.string.lock);
         }
     }

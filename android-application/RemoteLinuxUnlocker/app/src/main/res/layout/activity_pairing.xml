@@ -37,7 +37,8 @@
                 android:id="@+id/pairButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/pair"/>
+                android:text="@string/pair"
+                style="@style/Widget.AppCompat.Button.Colored"/>
         </LinearLayout>
 
 

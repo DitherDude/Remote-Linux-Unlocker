@@ -47,7 +47,7 @@ public class ComputerListActivity extends AppCompatActivity {
         // Setup refresh listener which triggers new data loading
         swipeContainer.setOnRefreshListener(this::refreshComputerList);
         // Configure the refreshing colors
-        swipeContainer.setColorSchemeResources(R.color.colorAccent);
+        swipeContainer.setColorSchemeResources(R.color.defaultColorAccent);
 
         refreshComputerList();
     }
