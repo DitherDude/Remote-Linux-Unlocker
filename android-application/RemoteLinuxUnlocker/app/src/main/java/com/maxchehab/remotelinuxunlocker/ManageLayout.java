@@ -64,11 +64,7 @@ public class ManageLayout extends CardView {
         String echoResponse = null;
         try {
             echoResponse = executor.submit(new ClientBuilder().setHost(key.ip).setPort(61599).setMessage("{\"command\":\"status\",\"key\":\"" + key.key + "\"}").createClient()).get(2, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        } catch (TimeoutException e) {
+        } catch (InterruptedException | TimeoutException | ExecutionException e) {
             e.printStackTrace();
         }
 

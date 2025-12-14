@@ -56,12 +56,8 @@ public class PairingActivity extends AppCompatActivity {
     private static final ExecutorService executor = Executors.newSingleThreadExecutor();
     /** @noinspection CallToPrintStackTrace*/
     void pair(){
-        KeyPair key = new KeyPair(ipInput.getText().toString(), "");
+        KeyPair key = new KeyPair(ipInput.getText().toString());
         KeyPairList keys = new KeyPairList(this);
-//        if(keys.containsIp(key.ip)){
-//            ipInput.setError("IP address is already paired.");
-//            return;
-//        }
 
         try {
             String response = executor.submit(new ClientBuilder().setHost(key.ip).setPort(61598).setMessage("{\"command\":\"pair\",\"key\":\"" + key.key + "\"}").createClient()).get(1, TimeUnit.SECONDS);
@@ -79,13 +75,7 @@ public class PairingActivity extends AppCompatActivity {
                 keys.commitKeys(this);
                 pairSuccess();
             }
-        } catch (InterruptedException e) {
-            pairFailed();
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            pairFailed();
-            e.printStackTrace();
-        }catch (TimeoutException e) {
+        } catch (InterruptedException | TimeoutException | ExecutionException e) {
             pairFailed();
             e.printStackTrace();
         }

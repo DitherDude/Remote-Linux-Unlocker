@@ -73,10 +73,10 @@ public class ComputerListActivity extends AppCompatActivity {
         }
         for (KeyPair k: keys) {
             if (!commanded && getIntent().hasExtra("command")) {
-                computerList.add(new ComputerLayout(this, k.ip, k.key, getIntent().getStringExtra("command")));
+                computerList.add(new ComputerLayout(this, k, getIntent().getStringExtra("command")));
                 commanded = true;
             } else {
-                computerList.add(new ComputerLayout(this, k.ip, k.key));
+                computerList.add(new ComputerLayout(this, k));
             }
         }
 

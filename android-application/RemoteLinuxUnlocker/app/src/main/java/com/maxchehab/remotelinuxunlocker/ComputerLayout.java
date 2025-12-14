@@ -7,7 +7,6 @@ import android.os.Looper;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.CardView;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -19,6 +18,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Created by Max on 5/10/2017.
@@ -31,14 +31,14 @@ public class ComputerLayout extends CardView{
         super(context);
     }
 
-    public ComputerLayout(Context context, String ip, String key) {
+    public ComputerLayout(Context context, KeyPair key) {
         super(context);
-        init(context, ip,key,null);
+        init(context, key,null);
     }
 
-    public ComputerLayout(Context context, String ip, String key, String command) {
+    public ComputerLayout(Context context, KeyPair key, String command) {
         super(context);
-        init(context, ip ,key, command);
+        init(context, key, command);
     }
 
     private TextView hostname;
@@ -46,18 +46,25 @@ public class ComputerLayout extends CardView{
 
     private boolean locked = false;
 
-    private void init(Context context, final String ip, final String key, String command) {
+    private void init(Context context, KeyPair key, String command) {
         inflate(getContext(), R.layout.computer_layout, this);
         hostname = findViewById(R.id.hostname);
+        hostname.setText(String.format("%s@%s", key.user, key.ip));
         lockButton = findViewById(R.id.lockButton);
         ExecutorService executor2 = Executors.newSingleThreadExecutor();
         Handler handler = new Handler(Looper.getMainLooper());
+        AtomicBoolean failed = new AtomicBoolean(false);
         executor2.execute(() -> {
-            StatusResult result = status(ip, key);
-            handler.post(() -> {
-               applyResult(context, result);
-            });
+            StatusResult result = status(key);
+            if (result != null) {
+                handler.post(() -> applyResult(context, result, key));
+            } else {
+                failed.set(true);
+            }
         });
+        if (failed.get()) {
+            command = null;
+        }
 
         lockButton.setOnClickListener(v -> {
             lockButton.setEnabled(false);
@@ -67,26 +74,22 @@ public class ComputerLayout extends CardView{
             lockButton.setText(R.string.loading_placeholder);
             invalidate();
             if(locked){
-                lock(context, ip,key,"unlock");
+                lock(context, key,"unlock");
             }else{
-                lock(context, ip, key,"lock");
+                lock(context, key,"lock");
             }
         });
 
         if(command != null){
-            lock(context, ip,key,command);
+            lock(context, key, command);
         }
     }
     private static final ExecutorService executor = Executors.newSingleThreadExecutor();
     /** @noinspection CallToPrintStackTrace*/
-    private void lock(Context context, String ip, String key, String action){
+    private void lock(Context context, KeyPair key, String action){
         try {
-            executor.submit(new ClientBuilder().setHost(ip).setPort(61599).setMessage("{\"command\":\"" + action + "\",\"key\":\"" + key + "\"}").createClient()).get(2, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        } catch (TimeoutException e) {
+            executor.submit(new ClientBuilder().setHost(key.ip).setPort(61599).setMessage("{\"command\":\"" + action + "\",\"key\":\"" + key.key + "\"}").createClient()).get(2, TimeUnit.SECONDS);
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
             e.printStackTrace();
         }
         ExecutorService executor2 = Executors.newSingleThreadExecutor();
@@ -94,13 +97,9 @@ public class ComputerLayout extends CardView{
         executor2.execute(() -> {
             boolean tempLocked = locked;
             while(tempLocked == locked){
-                StatusResult result = status(ip, key);
+                StatusResult result = status(key);
                 if (result != null && result.locked != locked) {
-                    handler.post(() -> {
-                        applyResult(context, result);
-                        lockButton.setClickable(true);
-                        lockButton.setEnabled(true);
-                    });
+                    handler.post(() -> applyResult(context, result, key));
                 }
             }
         });
@@ -108,9 +107,9 @@ public class ComputerLayout extends CardView{
 
     private record StatusResult(String hostname, boolean locked){}
 
-    private void applyResult(Context context, StatusResult result) {
+    private void applyResult(Context context, StatusResult result, KeyPair key) {
         locked = result.locked;
-        hostname.setText(result.hostname);
+        hostname.setText(String.format("%s@%s", key.user, result.hostname));
         if(locked){
             int color = ContextCompat.getColor(context, R.color.dangerColorAccent);
             lockButton.setBackgroundTintList(ColorStateList.valueOf(color));
@@ -120,28 +119,23 @@ public class ComputerLayout extends CardView{
             lockButton.setBackgroundTintList(ColorStateList.valueOf(color));
             lockButton.setText(R.string.lock);
         }
+        lockButton.setClickable(true);
+        lockButton.setEnabled(true);
     }
 
 
     /** @noinspection CallToPrintStackTrace*/
-    private StatusResult status(String ip, String key){
+    private StatusResult status(KeyPair key){
         String echoResponse = null;
         try {
-            echoResponse = executor.submit(new ClientBuilder().setHost(ip).setPort(61599).setMessage("{\"command\":\"status\",\"key\":\"" + key + "\"}").createClient()).get(2, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        } catch (TimeoutException e) {
+            echoResponse = executor.submit(new ClientBuilder().setHost(key.ip).setPort(61599).setMessage("{\"command\":\"status\",\"key\":\"" + key.key + "\"}").createClient()).get(2, TimeUnit.SECONDS);
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
             e.printStackTrace();
         }
 
         Log.d("status-response","Response: " + echoResponse);
 
-        if(echoResponse == null){
-            this.setVisibility(View.GONE);
-        }else{
-            this.setVisibility(View.VISIBLE);
+        if(echoResponse != null) {
             JsonObject rootObj = JsonParser.parseString(echoResponse).getAsJsonObject();
             Log.d("hostname",rootObj.get("hostname").getAsString());
             return new StatusResult(rootObj.get("hostname").getAsString(), rootObj.get("isLocked").getAsBoolean());

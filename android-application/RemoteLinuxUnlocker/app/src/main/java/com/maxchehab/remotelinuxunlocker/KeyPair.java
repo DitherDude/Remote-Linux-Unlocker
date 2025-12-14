@@ -10,16 +10,11 @@ public class KeyPair {
     final String key;
     String user;
 
-    KeyPair(String ip, String user) {
+    KeyPair(String ip) {
         this.ip = ip;
         this.key = new BigInteger(getRandomNumber(64)).toString();
-        this.user = user;
+        this.user = "";
     }
-
-//    public KeyPair user(String user) {
-//        this.user = user;
-//        return this;
-//    }
 
     public boolean containsIp(String ip) {
         return Objects.equals(this.ip, ip);

@@ -13,5 +13,6 @@
     <string name="unlock">Unlock</string>
     <string name="lock">Lock</string>
     <string name="back">Back</string>
-    <string name="loading_placeholder">Loading...</string>
+    <string name="loading_placeholder">Loading…</string>
+    <string name="offline">Offline</string>
 </resources>
