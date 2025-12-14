@@ -49,18 +49,9 @@ public class DeleteLayout extends CardView {
     }
 
     void deleteIp(Context context, String ip) {
-        SharedPreferences sharedPref = context.getSharedPreferences("data", MODE_PRIVATE);
-        String key = sharedPref.getString("key",null);
-        String ipString = sharedPref.getString("ips",null);
-        List<String> ips = new ArrayList<String>();
-        if(!ipString.isEmpty()){
-            ips = Arrays.asList(sharedPref.getString("ips",null).split(","));
-            ips = new ArrayList<String>(ips);
-        }
-        ips.remove(ip);
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putString("ips", android.text.TextUtils.join(",", ips));
-        editor.commit();
+        KeyPairList keys = new KeyPairList(context);
+        keys.removeKey(ip);
+        keys.commitKeys(context);
     }
 
     private void status(String ip, String key) {

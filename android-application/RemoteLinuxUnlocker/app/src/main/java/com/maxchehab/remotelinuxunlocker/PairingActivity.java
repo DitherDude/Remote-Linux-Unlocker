@@ -1,5 +1,7 @@
 package com.maxchehab.remotelinuxunlocker;
 
+import static com.maxchehab.remotelinuxunlocker.ComputerListActivity.getRandomNumber;
+
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
@@ -11,6 +13,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -67,25 +70,21 @@ public class PairingActivity extends AppCompatActivity {
     }
 
     void pair(){
-        SharedPreferences sharedPref = getSharedPreferences("data", MODE_PRIVATE);
-        String key = sharedPref.getString("key",null);
-        String ipString = sharedPref.getString("ips",null);
-        List<String> ips = new ArrayList<String>();
-        if(ipString.length() > 0){
-            ips = Arrays.asList(sharedPref.getString("ips",null).split(","));
-            ips = new ArrayList<String>(ips);
-        }
-        if(ips.contains(ipInput.getText().toString())){
+        KeyPair key = new KeyPair(ipInput.getText().toString());
+        KeyPairList keys = new KeyPairList(this);
+        if(keys.containsIp(key.ip)){
             ipInput.setError("IP address is already paired.");
             return;
         }
 
         try {
-            String response = new Client(ipInput.getText().toString(), 61598, "{\"command\":\"pair\",\"key\":\"" +  key + "\"}").execute().get(1, TimeUnit.SECONDS);
+            String response = new Client(key.ip, 61598, "{\"command\":\"pair\",\"key\":\"" +  key.key + "\"}").execute().get(1, TimeUnit.SECONDS);
             Log.d("UI RESPONSE", "response: " + response);
             if(response == null){
                 pairFailed();
             }else{
+                keys.addKey(key);
+                keys.commitKeys(this);
                 pairSuccess();
             }
         } catch (InterruptedException e) {
@@ -106,15 +105,6 @@ public class PairingActivity extends AppCompatActivity {
 
     void pairSuccess(){
         ipInput.setError(null);
-
-        SharedPreferences sharedPref = getSharedPreferences("data", MODE_PRIVATE);
-        List<String> ips = Arrays.asList(sharedPref.getString("ips",null).split(","));
-        ips = new ArrayList<String>(ips);
-
-        ips.add(ipInput.getText().toString());
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putString("ips", android.text.TextUtils.join(",", ips));
-        editor.commit();
         finish();
     }
 

@@ -8,6 +8,7 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -26,25 +27,11 @@ public class ComputerListActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
-
-
-        SharedPreferences sharedPref = getSharedPreferences("data", MODE_PRIVATE);
-        if(!sharedPref.contains("key")){
-            SharedPreferences.Editor editor = sharedPref.edit();
-            editor.putString("key", new BigInteger(getRandomNumber(64)).toString());
-            editor.commit();
-        }
-        if(!sharedPref.contains("ips")){
-            SharedPreferences.Editor editor = sharedPref.edit();
-            editor.putString("ips", "");
-            editor.commit();
-        }
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_computer_list);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+        Button buttonPair = (Button) findViewById(R.id.buttonPair);
+        buttonPair.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(view.getContext(), PairingActivity.class);
@@ -52,8 +39,8 @@ public class ComputerListActivity extends AppCompatActivity {
             }
         });
 
-        FloatingActionButton deleteFab = (FloatingActionButton) findViewById(R.id.deleteFab);
-        deleteFab.setOnClickListener(new View.OnClickListener() {
+        Button buttonManage = (Button) findViewById(R.id.buttonManage);
+        buttonManage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 deleteComputerList();
@@ -87,37 +74,23 @@ public class ComputerListActivity extends AppCompatActivity {
 
     public void refreshComputerList(){
         TextView infoBar = (TextView) findViewById(R.id.infoBar);
-        SharedPreferences sharedPref = getSharedPreferences("data", MODE_PRIVATE);
-        String key = sharedPref.getString("key",null);
-        Log.d("ips",sharedPref.getString("ips",null));
-        String ipString = sharedPref.getString("ips",null);
-        List<String> ips = new ArrayList<String>();
-        if(!ipString.isEmpty()){
-            ips = Arrays.asList(sharedPref.getString("ips",null).split(","));
-            ips = new ArrayList<String>(ips);
-        }
         ArrayList<View> computerList = new ArrayList<View>();
-        if (ips.isEmpty()) {
+        KeyPairList keys = new KeyPairList(this);
+        if (keys.isEmpty()) {
             infoBar.setVisibility(View.VISIBLE);
         } else {
             infoBar.setVisibility(View.GONE);
         }
-        for(int i = 0 ; i < ips.size(); i++){
-            if(!ips.get(i).isEmpty()){
-                Log.d("creating-ip",ips.get(i));
-
-                if(!commanded && getIntent().hasExtra("command")){
-
-                    computerList.add(new ComputerLayout(this,ips.get(i),key,getIntent().getStringExtra("command")));
-                    commanded = true;
-                }else{
-                    computerList.add(new ComputerLayout(this,ips.get(i),key));
-                }
-
+        for (KeyPair k: keys) {
+            if (!commanded && getIntent().hasExtra("command")) {
+                computerList.add(new ComputerLayout(this, k.ip, k.key, getIntent().getStringExtra("command")));
+                commanded = true;
+            } else {
+                computerList.add(new ComputerLayout(this, k.ip, k.key));
             }
         }
 
-        LinearLayout feedLayout = (LinearLayout) findViewById(R.id.delete);
+        LinearLayout feedLayout = (LinearLayout) findViewById(R.id.CardHolder);
         feedLayout.removeAllViews();
 
 
@@ -129,37 +102,21 @@ public class ComputerListActivity extends AppCompatActivity {
 
     public void deleteComputerList() {
         TextView infoBar = (TextView) findViewById(R.id.infoBar);
-        SharedPreferences sharedPref = getSharedPreferences("data", MODE_PRIVATE);
-        String key = sharedPref.getString("key",null);
-        // Log.d("ips",sharedPref.getString("ips",null));
-        String ipString = sharedPref.getString("ips",null);
-        List<String> ips = new ArrayList<String>();
-        if(!ipString.isEmpty()){
-            ips = Arrays.asList(sharedPref.getString("ips",null).split(","));
-            ips = new ArrayList<String>(ips);
-        }
         ArrayList<View> computerList = new ArrayList<View>();
-        if (ips.isEmpty()) {
+        KeyPairList keys = new KeyPairList(this);
+        if (keys.isEmpty()) {
             infoBar.setVisibility(View.VISIBLE);
         } else {
             infoBar.setVisibility(View.GONE);
         }
-        for(int i = 0 ; i < ips.size(); i++){
-            if(!ips.get(i).isEmpty()){
-                // Log.d("creating-ip",ips.get(i));
-
-                if(!commanded && getIntent().hasExtra("command")){
-
-                    computerList.add(new DeleteLayout(this,ips.get(i),key));
-                    commanded = true;
-                }else{
-                    computerList.add(new DeleteLayout(this,ips.get(i),key));
-                }
-
+        for (KeyPair k: keys) {
+            computerList.add(new DeleteLayout(this, k.ip, k.key));
+            if (!commanded && getIntent().hasExtra("command")) {
+                commanded = true;
             }
         }
 
-        LinearLayout feedLayout = (LinearLayout) findViewById(R.id.delete);
+        LinearLayout feedLayout = (LinearLayout) findViewById(R.id.CardHolder);
         feedLayout.removeAllViews();
 
 
@@ -167,10 +124,6 @@ public class ComputerListActivity extends AppCompatActivity {
             feedLayout.addView(computerList.get(i));
         }
         swipeContainer.setRefreshing(false);
-    }
-
-    public void DeleteMenu(android.view.View view){
-
     }
 
     public static String getRandomNumber(int digCount) {
