@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -24,13 +23,13 @@
                 android:layout_height="36dp"
                 android:background="#FF1414"
                 android:gravity="bottom|center"
-                android:text="Computers will appear here"
+                android:text="@string/layout_banner"
                 android:textStyle="bold" />
 
             <LinearLayout
                 android:id="@+id/CardHolder"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="0dp"
                 android:layout_weight="1"
                 android:background="#87C120"
                 android:orientation="vertical"/>
@@ -41,7 +40,8 @@
                 android:background="#06E480">
 
                 <LinearLayout
-                    android:layout_width="match_parent"
+                    style="?android:attr/buttonBarStyle"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:background="#1C4CBD"
@@ -49,24 +49,27 @@
 
                     <Button
                         android:id="@+id/buttonManage"
+                        style="?android:attr/buttonBarButtonStyle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Manage Devices" />
+                        android:text="@string/manage_devices" />
 
                     <Button
                         android:id="@+id/buttonHelp"
+                        style="?android:attr/buttonBarButtonStyle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Help" />
+                        android:text="@string/help" />
 
                     <Button
                         android:id="@+id/buttonPair"
+                        style="?android:attr/buttonBarButtonStyle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Add device" />
+                        android:text="@string/add_device" />
                 </LinearLayout>
             </HorizontalScrollView>
         </LinearLayout>

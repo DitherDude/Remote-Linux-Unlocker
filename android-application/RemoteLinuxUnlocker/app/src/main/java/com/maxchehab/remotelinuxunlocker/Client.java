@@ -1,24 +1,21 @@
 package com.maxchehab.remotelinuxunlocker;
 
-import android.os.AsyncTask;
 import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.net.UnknownHostException;
+import java.util.concurrent.Callable;
 
-public class Client extends AsyncTask<Void, String, String> {
-
-    String host;
-    int port;
-    String message;
+public class Client implements Callable<String> {
+    final String host;
+    final int port;
+    final String message;
 
     Client(String host, int port,String message) {
         this.host = host;
@@ -27,7 +24,7 @@ public class Client extends AsyncTask<Void, String, String> {
     }
 
     @Override
-    protected String doInBackground(Void... arg0) {
+    public String call() {
         Socket socket = null;
         try {
             InetAddress address = InetAddress.getByName(host);
@@ -44,7 +41,7 @@ public class Client extends AsyncTask<Void, String, String> {
 
             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             String response = in.readLine();
-            Log.d("async-client","recieved message: " + response);
+            Log.d("async-client","received message: " + response);
             return response;
         } catch (IOException exception) {
             Log.d("async-client", "the server is offline?");
@@ -54,16 +51,11 @@ public class Client extends AsyncTask<Void, String, String> {
                 try {
                     socket.close();
                 } catch (IOException e) {
+                    //noinspection CallToPrintStackTrace
                     e.printStackTrace();
                 }
             }
         }
         return null;
     }
-
-    @Override
-    protected void onPostExecute(String result) {
-        super.onPostExecute(result);
-    }
-
 }

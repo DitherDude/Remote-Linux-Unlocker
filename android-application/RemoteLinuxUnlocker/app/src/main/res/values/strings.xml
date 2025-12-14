@@ -1,5 +1,19 @@
 <resources>
     <string name="app_name">Remote Linux Unlocker</string>
-    <string name="title_activity_computer_list">ComputerListActivity</string>
-    <string name="title_activity_lock_computer">Lock Computer</string>
+    <string name="delete">Delete</string>
+    <string name="ic_linux_content_description">Tux the Penguin inside a Computer display.</string>
+    <string name="layout_banner">Computers will appear here</string>
+    <string name="manage_devices">Manage Devices</string>
+    <string name="help">Help</string>
+    <string name="add_device">Add device</string>
+    <string name="pair_banner">Instructions to pair device:</string>
+    <string name="pair_instructions">If you have not already installed Remote Linux Unlocker on your computer please do so. Instructions are at https://github.com/maxchehab/remote-linux-unlocker.\n\nOnce you have installed Remote Linux Unlocker on your computer run the command \'remote-linux-pair\' in a terminal. Simply follow the instructions.</string>
+    <string name="pair_sample_ip">127.0.0.1</string>
+    <string name="pair">Pair</string>
+    <string name="placeholder_optimus">optimus</string>
+    <string name="unlock">Unlock</string>
+    <string name="placeholder_computername">ComputerName</string>
+    <string name="palceholder_computerip">ComputerIp</string>
+    <string name="lock">Lock</string>
+    <string name="back">Back</string>
 </resources>

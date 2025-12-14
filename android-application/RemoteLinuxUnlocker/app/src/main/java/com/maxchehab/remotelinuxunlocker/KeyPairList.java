@@ -5,9 +5,10 @@ import static android.content.Context.MODE_PRIVATE;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import com.google.gson.Gson;
+
 import java.util.ArrayList;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 public class KeyPairList extends ArrayList<KeyPair> {
     public boolean containsIp(String ip) {
@@ -32,18 +33,12 @@ public class KeyPairList extends ArrayList<KeyPair> {
     }
 
     public void commitKeys(Context context) {
-        ArrayList<String> splits = new ArrayList<String>();
-        for (KeyPair k : this) {
-            splits.add(k.ip + " " + k.key);
-        }
-        String collected = splits.stream().collect(Collectors.joining(","));
+        String serialized = new Gson().toJson(this);
         SharedPreferences sharedPref = context.getSharedPreferences("data", MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putString("keysets", collected);
+        editor.putString("keysets", serialized);
         editor.apply();
-
     }
-
     public KeyPairList(Context context) {
         SharedPreferences sharedPref = context.getSharedPreferences("data", MODE_PRIVATE);
         if(!sharedPref.contains("keysets")){
@@ -52,13 +47,19 @@ public class KeyPairList extends ArrayList<KeyPair> {
             editor.apply();
         }
         String data = sharedPref.getString("keysets",null);
-        if (data == null || data.isEmpty()) {
-            return;
-        }
-        String[] splitData = data.split(",");
-        for (String split: splitData) {
-            String[] reSplit = split.split(" ");
-            this.add(new KeyPair(reSplit[0], reSplit[1]));
+        try {
+            KeyPairList list = new Gson().fromJson(data, KeyPairList.class);
+            if (list == null || list.isEmpty()) {
+                return;
+            }
+            this.addAll(list);
+        } catch (Exception e) {
+            //noinspection ThrowablePrintedToSystemOut
+            System.out.println(e);
+            KeyPairList empty = new KeyPairList();
+            empty.commitKeys(context);
         }
     }
+
+    public KeyPairList(){}
 }

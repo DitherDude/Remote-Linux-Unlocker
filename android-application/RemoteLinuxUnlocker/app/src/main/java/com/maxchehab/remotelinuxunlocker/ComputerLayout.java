@@ -7,11 +7,12 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -20,6 +21,11 @@ import java.util.concurrent.TimeoutException;
  */
 
 public class ComputerLayout extends CardView{
+
+
+    public ComputerLayout(Context context) {
+        super(context);
+    }
 
     public ComputerLayout(Context context, String ip, String key) {
         super(context);
@@ -39,21 +45,18 @@ public class ComputerLayout extends CardView{
     private void init(final String ip, final String key, String command) {
 
         inflate(getContext(), R.layout.computer_layout, this);
-        hostname = (TextView) findViewById(R.id.hostname);
-        lockButton = (Button) findViewById(R.id.lockButton);
+        hostname = findViewById(R.id.hostname);
+        lockButton = findViewById(R.id.lockButton);
 
         status(ip, key);
 
-        lockButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                lockButton.setEnabled(false);
-                lockButton.setClickable(false);
-                if(locked){
-                    lock(ip,key,"unlock");
-                }else{
-                    lock(ip, key,"lock");
-                }
+        lockButton.setOnClickListener(v -> {
+            lockButton.setEnabled(false);
+            lockButton.setClickable(false);
+            if(locked){
+                lock(ip,key,"unlock");
+            }else{
+                lock(ip, key,"lock");
             }
         });
 
@@ -61,10 +64,11 @@ public class ComputerLayout extends CardView{
             lock(ip,key,command);
         }
     }
-
+    private static final ExecutorService executor = Executors.newSingleThreadExecutor();
+    /** @noinspection CallToPrintStackTrace*/
     private void lock(String ip, String key, String action){
         try {
-            new Client(ip,61599,"{\"command\":\"" + action + "\",\"key\":\"" +  key + "\"}").execute().get(2, TimeUnit.SECONDS);
+            executor.submit(new ClientBuilder().setHost(ip).setPort(61599).setMessage("{\"command\":\"" + action + "\",\"key\":\"" + key + "\"}").createClient()).get(2, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
@@ -81,10 +85,11 @@ public class ComputerLayout extends CardView{
     }
 
 
+    /** @noinspection CallToPrintStackTrace*/
     private void status(String ip, String key){
         String echoResponse = null;
         try {
-            echoResponse = new Client(ip,61599,"{\"command\":\"status\",\"key\":\"" +  key + "\"}").execute().get(2, TimeUnit.SECONDS);
+            echoResponse = executor.submit(new ClientBuilder().setHost(ip).setPort(61599).setMessage("{\"command\":\"status\",\"key\":\"" + key + "\"}").createClient()).get(2, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
@@ -99,17 +104,15 @@ public class ComputerLayout extends CardView{
             this.setVisibility(View.GONE);
         }else{
             this.setVisibility(View.VISIBLE);
-            JsonParser jp = new JsonParser();
-            JsonElement root = jp.parse(echoResponse);
-            JsonObject rootobj = root.getAsJsonObject();
-            Log.d("hostname",rootobj.get("hostname").getAsString());
-            hostname.setText(rootobj.get("hostname").getAsString());
-            locked = rootobj.get("isLocked").getAsBoolean();
+            JsonObject rootObj = JsonParser.parseString(echoResponse).getAsJsonObject();
+            Log.d("hostname",rootObj.get("hostname").getAsString());
+            hostname.setText(rootObj.get("hostname").getAsString());
+            locked = rootObj.get("isLocked").getAsBoolean();
 
             if(locked){
-                lockButton.setText("Unlock");
+                lockButton.setText(R.string.unlock);
             }else{
-                lockButton.setText("Lock");
+                lockButton.setText(R.string.lock);
             }
         }
     }

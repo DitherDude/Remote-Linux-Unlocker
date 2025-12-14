@@ -1,9 +1,7 @@
 package com.maxchehab.remotelinuxunlocker;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -12,15 +10,12 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Random;
 
 public class ComputerListActivity extends AppCompatActivity {
 
-    private static Random rnd = new Random();
+    private static final Random rnd = new Random();
     private SwipeRefreshLayout swipeContainer;
     boolean commanded = false;
 
@@ -30,32 +25,27 @@ public class ComputerListActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_computer_list);
 
-        Button buttonPair = (Button) findViewById(R.id.buttonPair);
-        buttonPair.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(view.getContext(), PairingActivity.class);
-                startActivity(intent);
-            }
+        Button buttonPair = findViewById(R.id.buttonPair);
+        buttonPair.setOnClickListener(view -> {
+            Intent intent = new Intent(view.getContext(), PairingActivity.class);
+            startActivity(intent);
         });
 
-        Button buttonManage = (Button) findViewById(R.id.buttonManage);
-        buttonManage.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+        Button buttonManage = findViewById(R.id.buttonManage);
+        buttonManage.setOnClickListener(view -> {
+            if (buttonManage.getText().toString().equals("Back")) {
+                buttonManage.setText(R.string.manage_devices);
+                refreshComputerList();
+            } else {
+                buttonManage.setText(R.string.back);
                 deleteComputerList();
             }
         });
 
 
-        swipeContainer = (SwipeRefreshLayout) findViewById(R.id.refresh);
+        swipeContainer = findViewById(R.id.refresh);
         // Setup refresh listener which triggers new data loading
-        swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                refreshComputerList();
-            }
-        });
+        swipeContainer.setOnRefreshListener(this::refreshComputerList);
         // Configure the refreshing colors
         swipeContainer.setColorSchemeResources(R.color.colorAccent);
 
@@ -73,8 +63,8 @@ public class ComputerListActivity extends AppCompatActivity {
     }
 
     public void refreshComputerList(){
-        TextView infoBar = (TextView) findViewById(R.id.infoBar);
-        ArrayList<View> computerList = new ArrayList<View>();
+        TextView infoBar = findViewById(R.id.infoBar);
+        ArrayList<View> computerList = new ArrayList<>();
         KeyPairList keys = new KeyPairList(this);
         if (keys.isEmpty()) {
             infoBar.setVisibility(View.VISIBLE);
@@ -90,7 +80,7 @@ public class ComputerListActivity extends AppCompatActivity {
             }
         }
 
-        LinearLayout feedLayout = (LinearLayout) findViewById(R.id.CardHolder);
+        LinearLayout feedLayout = findViewById(R.id.CardHolder);
         feedLayout.removeAllViews();
 
 
@@ -101,8 +91,8 @@ public class ComputerListActivity extends AppCompatActivity {
     }
 
     public void deleteComputerList() {
-        TextView infoBar = (TextView) findViewById(R.id.infoBar);
-        ArrayList<View> computerList = new ArrayList<View>();
+        TextView infoBar = findViewById(R.id.infoBar);
+        ArrayList<View> computerList = new ArrayList<>();
         KeyPairList keys = new KeyPairList(this);
         if (keys.isEmpty()) {
             infoBar.setVisibility(View.VISIBLE);
@@ -110,13 +100,13 @@ public class ComputerListActivity extends AppCompatActivity {
             infoBar.setVisibility(View.GONE);
         }
         for (KeyPair k: keys) {
-            computerList.add(new DeleteLayout(this, k.ip, k.key));
+            computerList.add(new ManageLayout(this, k.ip, k.key));
             if (!commanded && getIntent().hasExtra("command")) {
                 commanded = true;
             }
         }
 
-        LinearLayout feedLayout = (LinearLayout) findViewById(R.id.CardHolder);
+        LinearLayout feedLayout = findViewById(R.id.CardHolder);
         feedLayout.removeAllViews();
 
 
