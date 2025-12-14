@@ -7,6 +7,9 @@ import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -53,12 +56,12 @@ public class PairingActivity extends AppCompatActivity {
     private static final ExecutorService executor = Executors.newSingleThreadExecutor();
     /** @noinspection CallToPrintStackTrace*/
     void pair(){
-        KeyPair key = new KeyPair(ipInput.getText().toString());
+        KeyPair key = new KeyPair(ipInput.getText().toString(), "");
         KeyPairList keys = new KeyPairList(this);
-        if(keys.containsIp(key.ip)){
-            ipInput.setError("IP address is already paired.");
-            return;
-        }
+//        if(keys.containsIp(key.ip)){
+//            ipInput.setError("IP address is already paired.");
+//            return;
+//        }
 
         try {
             String response = executor.submit(new ClientBuilder().setHost(key.ip).setPort(61598).setMessage("{\"command\":\"pair\",\"key\":\"" + key.key + "\"}").createClient()).get(1, TimeUnit.SECONDS);
@@ -66,6 +69,12 @@ public class PairingActivity extends AppCompatActivity {
             if(response == null){
                 pairFailed();
             }else{
+                JsonObject responseObject = JsonParser.parseString(response).getAsJsonObject();
+                key.user = responseObject.get("user").getAsString();
+                if (keys.containsKey(key)) {
+                    ipInput.setError("IP address is already paired with this user.");
+                    return;
+                }
                 keys.addKey(key);
                 keys.commitKeys(this);
                 pairSuccess();

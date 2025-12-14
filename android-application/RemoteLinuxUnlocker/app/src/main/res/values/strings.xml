@@ -10,10 +10,8 @@
     <string name="pair_instructions">If you have not already installed Remote Linux Unlocker on your computer please do so. Instructions are at https://github.com/maxchehab/remote-linux-unlocker.\n\nOnce you have installed Remote Linux Unlocker on your computer run the command \'remote-linux-pair\' in a terminal. Simply follow the instructions.</string>
     <string name="pair_sample_ip">127.0.0.1</string>
     <string name="pair">Pair</string>
-    <string name="placeholder_optimus">optimus</string>
     <string name="unlock">Unlock</string>
-    <string name="placeholder_computername">ComputerName</string>
-    <string name="palceholder_computerip">ComputerIp</string>
     <string name="lock">Lock</string>
     <string name="back">Back</string>
+    <string name="loading_placeholder">Loading...</string>
 </resources>

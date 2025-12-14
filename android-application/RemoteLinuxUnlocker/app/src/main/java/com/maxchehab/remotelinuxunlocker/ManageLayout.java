@@ -1,6 +1,8 @@
 package com.maxchehab.remotelinuxunlocker;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v7.widget.CardView;
 import android.util.Log;
 import android.view.View;
@@ -22,25 +24,32 @@ public class ManageLayout extends CardView {
         super(context);
     }
 
-    public ManageLayout(Context context, String ip, String key) {
+    public ManageLayout(Context context, KeyPair key) {
         super(context);
-        init(context, ip, key);
+        init(context, key);
     }
+    private static final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private static final Handler handler = new Handler(Looper.getMainLooper());
+    private TextView deetsBar;
 
-    private TextView hostname2;
-
-    private void init(Context context, final String ip, final String key) {
+    private void init(Context context, KeyPair key) {
+        ExecutorService executor2 = Executors.newSingleThreadExecutor();
         inflate(getContext(), R.layout.manage_layout, this);
-        hostname2 = findViewById(R.id.hostname2);
-        TextView hostip = findViewById(R.id.hostip);
+        deetsBar = findViewById(R.id.deetsBar);
         Button deleteComputer = findViewById(R.id.deleteComputer);
         deleteComputer.setOnClickListener(view -> {
-            deleteIp(context, ip);
+            deleteIp(context, key.ip);
             setVisibility(View.GONE);
         });
-        hostip.setText(ip);
-        hostname2.setText("?????");
-        status(ip, key);
+        deetsBar.setText(String.format("%s@%s", key.user, key.ip));
+        executor2.execute(() -> {
+            String hostname = status(key);
+            handler.post(() -> {
+                if (hostname != null) {
+                    deetsBar.setText(String.format("%s@%s (%s)", key.user, key.ip, hostname));
+                }
+            });
+        });
     }
 
     void deleteIp(Context context, String ip) {
@@ -50,12 +59,11 @@ public class ManageLayout extends CardView {
         }
         keys.commitKeys(context);
     }
-    private static final ExecutorService executor = Executors.newSingleThreadExecutor();
     /** @noinspection CallToPrintStackTrace*/
-    private void status(String ip, String key) {
+    private String status(KeyPair key) {
         String echoResponse = null;
         try {
-            echoResponse = executor.submit(new ClientBuilder().setHost(ip).setPort(61599).setMessage("{\"command\":\"status\",\"key\":\"" + key + "\"}").createClient()).get(2, TimeUnit.SECONDS);
+            echoResponse = executor.submit(new ClientBuilder().setHost(key.ip).setPort(61599).setMessage("{\"command\":\"status\",\"key\":\"" + key.key + "\"}").createClient()).get(2, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
@@ -69,8 +77,9 @@ public class ManageLayout extends CardView {
         if(echoResponse != null) {
             JsonObject rootObj = JsonParser.parseString(echoResponse).getAsJsonObject();
             Log.d("hostname", rootObj.get("hostname").getAsString());
-            hostname2.setText(rootObj.get("hostname").getAsString());
+            return rootObj.get("hostname").getAsString();
         }
+        return null;
     }
 
 }

@@ -100,7 +100,7 @@ public class ComputerListActivity extends AppCompatActivity {
             infoBar.setVisibility(View.GONE);
         }
         for (KeyPair k: keys) {
-            computerList.add(new ManageLayout(this, k.ip, k.key));
+            computerList.add(new ManageLayout(this, k));
             if (!commanded && getIntent().hasExtra("command")) {
                 commanded = true;
             }

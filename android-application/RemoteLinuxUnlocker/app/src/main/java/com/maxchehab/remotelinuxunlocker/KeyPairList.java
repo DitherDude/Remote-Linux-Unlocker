@@ -11,9 +11,9 @@ import java.util.ArrayList;
 import java.util.Objects;
 
 public class KeyPairList extends ArrayList<KeyPair> {
-    public boolean containsIp(String ip) {
+    public boolean containsKey(KeyPair key) {
         for (KeyPair k: this) {
-            if (k.containsIp(ip)) {
+            if (k.containsIp(key.ip) && k.containsUser(key.user)) {
                 return true;
             }
         }

@@ -21,7 +21,6 @@
                 android:id="@+id/infoBar"
                 android:layout_width="match_parent"
                 android:layout_height="36dp"
-                android:background="#FF1414"
                 android:gravity="bottom|center"
                 android:text="@string/layout_banner"
                 android:textStyle="bold" />
@@ -31,41 +30,35 @@
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"
-                android:background="#87C120"
                 android:orientation="vertical"/>
 
             <HorizontalScrollView
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="#06E480">
+                android:layout_height="wrap_content">
 
                 <LinearLayout
-                    style="?android:attr/buttonBarStyle"
-                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
                     android:layout_gravity="center"
-                    android:background="#1C4CBD"
                     android:orientation="horizontal">
 
                     <Button
                         android:id="@+id/buttonManage"
-                        style="?android:attr/buttonBarButtonStyle"
-                        android:layout_width="wrap_content"
+                        style="@style/Widget.AppCompat.Button.Colored"                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="@string/manage_devices" />
 
                     <Button
                         android:id="@+id/buttonHelp"
-                        style="?android:attr/buttonBarButtonStyle"
-                        android:layout_width="wrap_content"
+                        style="@style/Widget.AppCompat.Button.Colored"                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="@string/help" />
 
                     <Button
                         android:id="@+id/buttonPair"
-                        style="?android:attr/buttonBarButtonStyle"
+                        style="@style/Widget.AppCompat.Button.Colored"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"

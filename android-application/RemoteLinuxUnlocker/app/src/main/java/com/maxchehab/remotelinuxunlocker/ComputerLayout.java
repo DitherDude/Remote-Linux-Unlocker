@@ -1,6 +1,8 @@
 package com.maxchehab.remotelinuxunlocker;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v7.widget.CardView;
 import android.util.Log;
 import android.view.View;
@@ -43,12 +45,17 @@ public class ComputerLayout extends CardView{
     private boolean locked = false;
 
     private void init(final String ip, final String key, String command) {
-
         inflate(getContext(), R.layout.computer_layout, this);
         hostname = findViewById(R.id.hostname);
         lockButton = findViewById(R.id.lockButton);
-
-        status(ip, key);
+        ExecutorService executor2 = Executors.newSingleThreadExecutor();
+        Handler handler = new Handler(Looper.getMainLooper());
+        executor2.execute(() -> {
+            StatusResult result = status(ip, key);
+            handler.post(() -> {
+               applyResult(result);
+            });
+        });
 
         lockButton.setOnClickListener(v -> {
             lockButton.setEnabled(false);
@@ -78,15 +85,36 @@ public class ComputerLayout extends CardView{
         }
         boolean tempLocked = locked;
         while(tempLocked == locked){
-            status(ip,key);
+            ExecutorService executor2 = Executors.newSingleThreadExecutor();
+            Handler handler = new Handler(Looper.getMainLooper());
+            executor2.execute(() -> {
+                StatusResult result = status(ip, key);
+                handler.post(() -> {
+                    applyResult(result);
+                });
+            });
         }
         lockButton.setClickable(true);
         lockButton.setEnabled(true);
     }
 
+    private record StatusResult(String hostname, boolean locked){}
+
+    private void applyResult(StatusResult result) {
+        if (result == null) {
+            return;
+        }
+        hostname.setText(result.hostname);
+        if(result.locked){
+            lockButton.setText(R.string.unlock);
+        } else {
+            lockButton.setText(R.string.lock);
+        }
+    }
+
 
     /** @noinspection CallToPrintStackTrace*/
-    private void status(String ip, String key){
+    private StatusResult status(String ip, String key){
         String echoResponse = null;
         try {
             echoResponse = executor.submit(new ClientBuilder().setHost(ip).setPort(61599).setMessage("{\"command\":\"status\",\"key\":\"" + key + "\"}").createClient()).get(2, TimeUnit.SECONDS);
@@ -106,15 +134,9 @@ public class ComputerLayout extends CardView{
             this.setVisibility(View.VISIBLE);
             JsonObject rootObj = JsonParser.parseString(echoResponse).getAsJsonObject();
             Log.d("hostname",rootObj.get("hostname").getAsString());
-            hostname.setText(rootObj.get("hostname").getAsString());
-            locked = rootObj.get("isLocked").getAsBoolean();
-
-            if(locked){
-                lockButton.setText(R.string.unlock);
-            }else{
-                lockButton.setText(R.string.lock);
-            }
+            return new StatusResult(rootObj.get("hostname").getAsString(), rootObj.get("isLocked").getAsBoolean());
         }
+        return null;
     }
 
 }

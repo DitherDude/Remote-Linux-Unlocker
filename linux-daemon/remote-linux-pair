@@ -62,13 +62,14 @@ while True:
             if is_json(data):
                 data = json.loads(data)
                 if data["command"] == "pair" and len(data["key"]) == 64:
+                    user = get_username()
                     if os.path.exists(os.path.dirname(os.path.realpath(__file__)) + '/keys'):
                         append_write = 'a' # append if already exists
                     else:
                         append_write = 'w' # make a new file if not
                     with open(os.path.dirname(os.path.realpath(__file__)) + '/keys', append_write) as file:
-                        file.write(get_username() + " " + data["key"] + "\n")
-                    connection.sendall(b'{"status":"success"}')
+                        file.write(user + " " + data["key"] + "\n")
+                    connection.sendall(b'{"status":"success","user":"' + user.encode() + b'"}')
                     eprint('Pairing was successful!')
                     sys.exit()
 
