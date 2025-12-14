@@ -6,6 +6,13 @@ Remote Linux Unlocker is an android application paired with a linux daemon that 
 
 Install the android application from the zip file (download command below) or download the source from this repository.
 
+> [!NOTE]
+> Until this PR is merged, replace the wget command below with
+> ```diff
+> - wget https://github.com/maxchehab/remote-linux-unlocker/raw/master/linux-daemon/linux-daemon.zip
+> + wget https://github.com/DitherDude/remote-linux-unlocker/raw/master/linux-daemon/linux-daemon.zip
+> ```
+
 ## How to install the linux daemon
 
 ```console

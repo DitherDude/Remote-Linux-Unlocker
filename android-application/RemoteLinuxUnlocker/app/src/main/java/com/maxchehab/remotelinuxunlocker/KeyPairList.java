@@ -22,6 +22,7 @@ public class KeyPairList extends ArrayList<KeyPair> {
     public void addKey(KeyPair key) {
         this.add(key);
     }
+    /** @noinspection BooleanMethodIsAlwaysInverted*/
     public boolean removeKey(KeyPair key) {
         for (KeyPair k : this) {
             if (Objects.equals(k.ip, key.ip) && Objects.equals(k.user, key.user)) {

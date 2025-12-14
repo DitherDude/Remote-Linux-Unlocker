@@ -12,7 +12,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -138,8 +137,6 @@ public class ComputerListActivity extends AppCompatActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (Intent.ACTION_USER_PRESENT.equals(intent.getAction())) {
-//                Log.d("UnlockReceiver", "Device has been unlocked by the user!");
-//                Toast.makeText(context, "Hello!", Toast.LENGTH_SHORT).show();
                 KeyPairList keys = new KeyPairList(context);
                 for (KeyPair k: keys) {
                     if (k.unlock) {

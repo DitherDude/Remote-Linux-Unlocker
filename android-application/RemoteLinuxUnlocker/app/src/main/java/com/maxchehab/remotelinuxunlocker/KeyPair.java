@@ -10,7 +10,7 @@ public class KeyPair {
     final String key;
     String user;
 
-    boolean unlock = false;
+    boolean unlock;
 
     KeyPair(String ip) {
         this.ip = ip;
