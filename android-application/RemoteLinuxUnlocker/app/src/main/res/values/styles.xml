@@ -8,10 +8,6 @@
         <item name="colorAccent">@color/defaultColorAccent</item>
     </style>
 
-    <style name="AccentButton" parent="ThemeOverlay.AppCompat.Light">
-        <item name="colorButtonNormal">@color/defaultColorAccent</item>
-        <item name="android:textColor">#737373</item>
-    </style>
     <style name="DangerButton">
         <item name="colorButtonNormal">@color/dangerColorAccent</item>
         <item name="android:textColor">#FFFFFF</item>

@@ -4,15 +4,20 @@
     <string name="ic_linux_content_description">Tux the Penguin inside a Computer display.</string>
     <string name="layout_banner">Computers will appear here</string>
     <string name="manage_devices">Manage Devices</string>
-    <string name="help">Help</string>
+    <string name="settings">Settings</string>
     <string name="add_device">Add device</string>
     <string name="pair_banner">Instructions to pair device:</string>
     <string name="pair_instructions">If you have not already installed Remote Linux Unlocker on your computer please do so. Instructions are at https://github.com/maxchehab/remote-linux-unlocker.\n\nOnce you have installed Remote Linux Unlocker on your computer run the command \'remote-linux-pair\' in a terminal. Simply follow the instructions.</string>
+    <string name="settings_banner">Application settings:</string>
+    <string name="settings_instructions">To change this application\'s settings, please use the options below.Note that pressing `APPLY` will immediately write the changes to the configuration, and re-launch this program.\nTap the ⓘ icon above any setting for more information.</string>
     <string name="pair_sample_ip">127.0.0.1</string>
     <string name="pair">Pair</string>
     <string name="unlock">Unlock</string>
     <string name="lock">Lock</string>
     <string name="back">Back</string>
+    <string name="commit">Apply and Relaunch</string>
     <string name="loading_placeholder">Loading…</string>
     <string name="offline">Offline</string>
+    <string name="unlock_hook">Enable unlock hook</string>
+    <string name="info">Info</string>
 </resources>

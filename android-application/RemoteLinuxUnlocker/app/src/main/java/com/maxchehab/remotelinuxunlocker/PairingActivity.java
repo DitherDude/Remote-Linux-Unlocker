@@ -51,7 +51,9 @@ public class PairingActivity extends AppCompatActivity {
         };
         ipInput.setFilters(filters);
 
-        pairButton.setOnClickListener(v -> pair());
+        pairButton.setOnClickListener(view -> pair());
+        Button buttonBack = findViewById(R.id.buttonBack);
+        buttonBack.setOnClickListener(view -> finish());
     }
     private static final ExecutorService executor = Executors.newSingleThreadExecutor();
     /** @noinspection CallToPrintStackTrace*/

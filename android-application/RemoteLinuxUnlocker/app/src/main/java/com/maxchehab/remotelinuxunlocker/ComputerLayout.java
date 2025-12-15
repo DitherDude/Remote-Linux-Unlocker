@@ -66,7 +66,7 @@ public class ComputerLayout extends CardView{
             command = null;
         }
 
-        lockButton.setOnClickListener(v -> {
+        lockButton.setOnClickListener(view -> {
             lockButton.setEnabled(false);
             lockButton.setClickable(false);
             int color = ContextCompat.getColor(context, R.color.warningColorAccent);

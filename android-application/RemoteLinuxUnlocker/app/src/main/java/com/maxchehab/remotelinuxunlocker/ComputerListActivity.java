@@ -1,9 +1,6 @@
 package com.maxchehab.remotelinuxunlocker;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -15,11 +12,6 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Random;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 public class ComputerListActivity extends AppCompatActivity {
 
@@ -32,16 +24,26 @@ public class ComputerListActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_computer_list);
 
-        IntentFilter filter = new IntentFilter(Intent.ACTION_USER_PRESENT);
-        registerReceiver(unlockReceiver, filter);
+        Settings settings = new Settings(this);
+//        if (settings.unlockHook) {
+        {
+            Intent intent = new Intent(this, PersistenceService.class);
+            intent.putExtra("create", settings.unlockHook);
+            startForegroundService(intent);
+        }
 
         Button buttonPair = findViewById(R.id.buttonPair);
         buttonPair.setOnClickListener(view -> {
-            Intent intent = new Intent(view.getContext(), PairingActivity.class);
+            Intent intent = new Intent(this, PairingActivity.class);
+            startActivity(intent);
+        });
+        Button buttonSettings = findViewById(R.id.buttonSettings);
+        buttonSettings.setOnClickListener(view -> {
+            Intent intent = new Intent(this, SettingsActivity.class);
             startActivity(intent);
         });
 
-        Button buttonManage = findViewById(R.id.buttonManage);
+        Button buttonManage = findViewById(R.id.buttonCommit);
         buttonManage.setOnClickListener(view -> {
             if (buttonManage.getText().toString().equals("Back")) {
                 buttonManage.setText(R.string.manage_devices);
@@ -132,23 +134,5 @@ public class ComputerListActivity extends AppCompatActivity {
             sb.append((char)('0' + rnd.nextInt(10)));
         return sb.toString();
     }
-    private static final ExecutorService executor = Executors.newSingleThreadExecutor();
-    private final BroadcastReceiver unlockReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (Intent.ACTION_USER_PRESENT.equals(intent.getAction())) {
-                KeyPairList keys = new KeyPairList(context);
-                for (KeyPair k: keys) {
-                    if (k.unlock) {
-                        try {
-                            executor.submit(new ClientBuilder().setHost(k.ip).setPort(61599).setMessage("{\"command\":\"unlock\",\"key\":\"" + k.key + "\"}").createClient()).get(2, TimeUnit.SECONDS);
-                        } catch (InterruptedException | ExecutionException | TimeoutException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            }
-        }
-    };
-
 }
+

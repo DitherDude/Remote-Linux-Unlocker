@@ -40,6 +40,7 @@ public class KeyPairList extends ArrayList<KeyPair> {
         editor.putString("keysets", serialized);
         editor.apply();
     }
+    /** @noinspection CallToPrintStackTrace*/
     public KeyPairList(Context context) {
         SharedPreferences sharedPref = context.getSharedPreferences("data", MODE_PRIVATE);
         if(!sharedPref.contains("keysets")){
@@ -55,8 +56,7 @@ public class KeyPairList extends ArrayList<KeyPair> {
             }
             this.addAll(list);
         } catch (Exception e) {
-            //noinspection ThrowablePrintedToSystemOut
-            System.out.println(e);
+            e.printStackTrace();
             KeyPairList empty = new KeyPairList();
             empty.commitKeys(context);
         }
